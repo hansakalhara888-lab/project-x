@@ -346,31 +346,123 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // PASSWORD GATE
-const PASSWORD = '22.04.2026';
+// PASSWORD GATE
+const PASSWORD     = '22.04.2026';
+const MAX_ATTEMPTS = 3;
+const LOCKOUT_MS   = 15 * 60 * 1000; // 15 minutes
 
 const passwordScreen = document.getElementById('passwordScreen');
 const passwordInput  = document.getElementById('passwordInput');
 const passwordBtn    = document.getElementById('passwordBtn');
 const passwordError  = document.getElementById('passwordError');
 
-function checkPassword() {
-  if (passwordInput.value.trim() === PASSWORD) {
-    passwordScreen.classList.add('hidden');
-    // auto-format as they type: add dots after DD and MM
-  } else {
-    passwordError.classList.add('visible');
-    passwordInput.classList.add('shake');
-    setTimeout(() => {
-      passwordError.classList.remove('visible');
-      passwordInput.classList.remove('shake');
-    }, 1800);
+let attempts = 0;
+let lockoutTimer = null;
+
+/* ── Check if already locked out from a previous visit ── */
+function checkExistingLockout() {
+  const lockedUntil = localStorage.getItem('lockoutUntil');
+  if (lockedUntil && Date.now() < parseInt(lockedUntil)) {
+    applyLockout(parseInt(lockedUntil) - Date.now());
+    return true;
   }
+  return false;
+}
+
+/* ── Lock the screen for 15 minutes ── */
+function applyLockout(remainingMs) {
+  // Disable input and button
+  passwordInput.disabled = true;
+  passwordBtn.disabled   = true;
+  passwordInput.value    = '';
+  passwordInput.placeholder = '🔒 locked';
+
+  // Save lockout end time so it survives page refresh
+  const lockedUntil = Date.now() + remainingMs;
+  localStorage.setItem('lockoutUntil', lockedUntil);
+
+  // Show the lockout message with live countdown
+  startCountdown(remainingMs);
+}
+
+/* ── Live countdown timer shown on screen ── */
+function startCountdown(remainingMs) {
+  const errorEl = document.getElementById('passwordError');
+
+  function tick() {
+    const left = parseInt(localStorage.getItem('lockoutUntil')) - Date.now();
+
+    if (left <= 0) {
+      // Lockout expired — unlock
+      localStorage.removeItem('lockoutUntil');
+      attempts = 0;
+      passwordInput.disabled    = false;
+      passwordBtn.disabled      = false;
+      passwordInput.placeholder = 'DD.MM.YYYY';
+      errorEl.classList.remove('visible');
+      errorEl.textContent = 'not quite, my love — try again 💔';
+      clearInterval(lockoutTimer);
+      return;
+    }
+
+    const mins = Math.floor(left / 60000);
+    const secs = Math.floor((left % 60000) / 1000);
+
+    // 👉 CUSTOMISE: Change "Pala HTTP" to whatever you want shown
+    errorEl.textContent = `Pala HTTP 🔒 try again in ${mins}:${secs.toString().padStart(2, '0')}`;
+    errorEl.classList.add('visible');
+  }
+
+  tick(); // show immediately
+  lockoutTimer = setInterval(tick, 1000);
+}
+
+/* ── Main password check ── */
+function checkPassword() {
+  // Block if locked out
+  if (passwordInput.disabled) return;
+
+  if (passwordInput.value.trim() === PASSWORD) {
+    // Correct — clear everything and reveal
+    localStorage.removeItem('lockoutUntil');
+    clearInterval(lockoutTimer);
+    passwordScreen.classList.add('hidden');
+  } else {
+    attempts++;
+    const left = MAX_ATTEMPTS - attempts;
+
+    passwordInput.classList.add('shake');
+    setTimeout(() => passwordInput.classList.remove('shake'), 400);
+
+    if (attempts >= MAX_ATTEMPTS) {
+      // Lock out for 15 minutes
+      passwordError.textContent = `Pala HTTP 🔒 try again in 15:00`;
+      passwordError.classList.add('visible');
+      applyLockout(LOCKOUT_MS);
+    } else {
+      // Show how many attempts remain
+      passwordError.textContent = `not quite, my love — ${left} attempt${left === 1 ? '' : 's'} left 💔`;
+      passwordError.classList.add('visible');
+      setTimeout(() => {
+        passwordError.classList.remove('visible');
+        // Restore default message
+        setTimeout(() => {
+          passwordError.textContent = 'not quite, my love — try again 💔';
+        }, 400);
+      }, 1800);
+    }
+  }
+
+  passwordInput.value = '';
 }
 
 passwordBtn.addEventListener('click', checkPassword);
 passwordInput.addEventListener('keydown', (e) => {
   if (e.key === 'Enter') checkPassword();
 });
+
+// Check lockout immediately on page load
+checkExistingLockout();
 
 // Auto-insert dots: typing 22042026 becomes 22.04.2026
 passwordInput.addEventListener('input', (e) => {
