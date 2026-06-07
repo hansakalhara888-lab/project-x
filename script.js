@@ -373,11 +373,30 @@ passwordInput.addEventListener('keydown', (e) => {
 });
 
 // Auto-insert dots: typing 22042026 becomes 22.04.2026
-passwordInput.addEventListener('input', () => {
-  let val = passwordInput.value.replace(/\./g, '').replace(/\D/g, '');
+passwordInput.addEventListener('input', (e) => {
+  // Don't auto-format if user is deleting or editing in the middle
+  const cursorPos = passwordInput.selectionStart;
+  const oldVal    = passwordInput.value;
+
+  let val = oldVal.replace(/\./g, '').replace(/\D/g, '');
   if (val.length > 2) val = val.slice(0,2) + '.' + val.slice(2);
   if (val.length > 5) val = val.slice(0,5) + '.' + val.slice(5);
-  passwordInput.value = val.slice(0, 10);
+  val = val.slice(0, 10);
+
+  if (val === oldVal) return; // nothing changed, don't touch cursor
+
+  // Figure out where cursor should land after reformat
+  const digitsBeforeCursor = oldVal.slice(0, cursorPos).replace(/\D/g, '').length;
+  passwordInput.value = val;
+
+  // Restore cursor position accounting for the dots
+  let newCursor = 0;
+  let digitsSeen = 0;
+  for (let i = 0; i < val.length; i++) {
+    if (/\d/.test(val[i])) digitsSeen++;
+    if (digitsSeen === digitsBeforeCursor) { newCursor = i + 1; break; }
+  }
+  passwordInput.setSelectionRange(newCursor, newCursor);
 });
 
 
