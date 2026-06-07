@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- =============================================
+    👉 CUSTOMISE: Change the browser tab title below
+  ============================================== -->
+  <title>A Surprise Just for You 💌</title>
+
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- Google Fonts: Cormorant Garamond (elegant serif) + Sacramento (cursive) + DM Sans (body) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Sacramento&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <!-- ============================================================
+    🌟 CANVAS: Floating hearts / fireflies drawn by JavaScript
+       (Don't touch — script.js handles this automatically)
+  ============================================================ -->
+  <canvas id="particleCanvas"></canvas>
+
+  <!-- ============================================================
+    SECTION 1: TEASER / LANDING STATE
+    The very first screen the user sees — dark, minimal, mysterious.
+  ============================================================ -->
+  <section id="teaser">
+    <div class="teaser-inner">
+
+      <!-- Small decorative top line — optional flourish -->
+      <div class="teaser-ornament">✦ &nbsp; ✦ &nbsp; ✦</div>
+
+      <!-- =============================================
+        👉 CUSTOMISE: Change this teaser tagline
+      ============================================== -->
+      <p class="teaser-tagline">for the one who makes every day feel like magic</p>
+
+      <button id="revealBtn" aria-label="Open the surprise">
+        <span class="btn-text">I have a surprise for you…</span>
+        <span class="btn-sub">click here ♥</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ============================================================
+    SECTION 2: MAIN PAGE (hidden until button is clicked)
+    Everything below slides in on reveal.
+  ============================================================ -->
+  <main id="mainContent" aria-hidden="true">
+
+    <!-- ── HERO ─────────────────────────────────────────────── -->
+    <section class="hero">
+      <div class="hero-inner">
+
+        <!-- =============================================
+          👉 CUSTOMISE: Change the greeting & her name
+        ============================================== -->
+        <p class="hero-eyebrow">hello, my love</p>
+        <h1 class="hero-title">
+          Haloooooo <span class="accent">My</span>,<br />
+          <!-- 👉 Replace "Amara" with her name -->
+          Manika 🌹
+        </h1>
+
+        <!-- =============================================
+          👉 CUSTOMISE: Change the subtitle / first line
+        ============================================== -->
+        <p class="hero-sub">
+          I made this little corner of the internet just for you —<br />
+          because some feelings are too big for a text message.
+        </p>
+
+        <div class="hero-divider">
+          <span>— &nbsp; ♥ &nbsp; —</span>
+        </div>
+      </div>
+    </section>
+
+
+<!-- PASSWORD SCREEN -->
+<section id="passwordScreen">
+  <div class="password-inner">
+    <div class="password-ornament">✦ &nbsp; ✦ &nbsp; ✦</div>
+    <h2 class="password-title">A Little Secret Door</h2>
+    <p class="password-hint">Hint: The April Special Day 🗓️</p>
+    <div class="password-input-wrap">
+      <input
+        type="text"
+        id="passwordInput"
+        placeholder="DD.MM.YYYY"
+        maxlength="10"
+        autocomplete="off"
+        spellcheck="false"
+      />
+    </div>
+    <button id="passwordBtn">Enter ♥</button>
+    <p class="password-error" id="passwordError">not quite, my love — try again 💔</p>
+  </div>
+</section>
+
+
+
+    <!-- ── MEMORY GALLERY ────────────────────────────────────── -->
+    <section class="gallery-section reveal-section">
+
+      <!-- =============================================
+        👉 CUSTOMISE: Change the section heading & subtitle
+      ============================================== -->
+      <div class="section-header">
+        <h2 class="section-title">Our Little Story</h2>
+        <p class="section-sub">a few of my favourite memories with you</p>
+      </div>
+
+      <div class="gallery-grid">
+
+        <!-- ── POLAROID 1 ── -->
+        <div class="polaroid reveal-item" style="--tilt: -3deg;">
+          <!-- 👉 Replace "" with the path to your photo, e.g. "photos/photo1.jpg" -->
+          <div class="polaroid-img-wrap">
+            <img src="Photoes/photo1.jpg" alt="Our first memory" class="polaroid-img" />
+            <!-- Placeholder shown when src is empty -->
+            <div class="photo-placeholder">img src="images/image1.jpg"</div>
+          </div>
+          <!-- 👉 Replace with your caption for this memory -->
+          
+        </div>
+
+        <!-- ── POLAROID 2 ── -->
+        <div class="polaroid reveal-item" style="--tilt: 2deg;">
+          <div class="polaroid-img-wrap">
+            <img src="Photoes/photo7.jpg" alt="A beautiful memory" class="polaroid-img" />
+            <div class="photo-placeholder">📷 Add photo here</div>
+          </div>
+          <!-- 👉 Replace with your caption -->
+          
+        </div>
+
+        <!-- ── POLAROID 3 ── -->
+        <div class="polaroid reveal-item" style="--tilt: -1.5deg;">
+          <div class="polaroid-img-wrap">
+            <img src="Photoes/photo3.jpg" alt="Another beautiful memory" class="polaroid-img" />
+            <div class="photo-placeholder">📷 Add photo here</div>
+          </div>
+          <!-- 👉 Replace with your caption -->
+          
+        </div>
+
+        <!-- ── POLAROID 4 ── -->
+        <div class="polaroid reveal-item" style="--tilt: 3.5deg;">
+          <div class="polaroid-img-wrap">
+            <img src="Photoes/photo4.jpg" alt="A cherished memory" class="polaroid-img" />
+            <div class="photo-placeholder">📷 Add photo here</div>
+          </div>
+          <!-- 👉 Replace with your caption -->
+          
+        </div>
+
+        <!-- ── POLAROID 5 ── -->
+        <div class="polaroid reveal-item" style="--tilt: -2.5deg;">
+          <div class="polaroid-img-wrap">
+            <img src="Photoes/photo5.jpg" alt="A lovely memory" class="polaroid-img" />
+            <div class="photo-placeholder">📷 Add photo here</div>
+          </div>
+          <!-- 👉 Replace with your caption -->
+          
+        </div>
+
+        <!-- ── POLAROID 6 ── -->
+        <div class="polaroid reveal-item" style="--tilt: 1deg;">
+          <div class="polaroid-img-wrap">
+            <img src="Photoes/photo6.jpg" alt="A wonderful memory" class="polaroid-img" />
+            <div class="photo-placeholder">📷 Add photo here</div>
+          </div>
+          <!-- 👉 Replace with your caption -->
+         
+        </div>
+
+        <!--
+          =============================================
+          👉 TO ADD MORE POLAROIDS:
+             Copy any polaroid block above, paste it here,
+             change the src, alt, and caption. That's it!
+          =============================================
+        -->
+
+      </div>
+    </section>
+
+
+
+    <!-- VIDEO SECTION -->
+<section class="video-section reveal-section">
+  <div class="section-header">
+    <!-- 👉 CUSTOMISE: Change the heading & subtitle -->
+    <h2 class="section-title">A Video That I love Much</h2>
+    <p class="section-sub">press play when your heart is ready 🎬</p>
+  </div>
+
+  <div class="video-wrapper reveal-item">
+
+    <!-- The romantic cover shown before play -->
+    <div class="video-cover" id="videoCover">
+      <div class="video-cover-bg"></div>
+      <div class="video-cover-content">
+        <p class="video-cover-quote">
+          <!-- 👉 CUSTOMISE: Your romantic prompt text -->
+          "Some moments are too beautiful<br/>to keep only in memory…"
+        </p>
+        <button class="video-play-btn" id="videoPlayBtn" aria-label="Play the video">
+          <span class="play-icon">▶</span>
+        </button>
+        <p class="video-cover-sub">Tap to watch </p>
+      </div>
+    </div>
+
+    <!-- 👉 CUSTOMISE: Replace "your-video.mp4" with your actual video filename -->
+    <!-- Put your video file in the same folder as index.html -->
+    <video
+      id="romanticVideo"
+      class="romantic-video"
+      playsinline
+      preload="metadata"
+    >
+      <source src="photoes/video.MP4" type="video/mp4" />
+      Your browser does not support the video tag.
+    </video>
+
+  </div>
+</section>
+
+
+    <!-- ── REASONS SECTION ───────────────────────────────────── -->
+    <section class="reasons-section reveal-section">
+      <div class="section-header">
+        <!-- 👉 CUSTOMISE: Change heading -->
+        <h2 class="section-title">Why I Love You</h2>
+        <p class="section-sub">just a few of the ten thousand reasons</p>
+      </div>
+
+      <ul class="reasons-list">
+
+        <!-- =============================================
+          👉 CUSTOMISE: Edit or add reasons below.
+             Each <li> is one reason. Emoji is optional.
+        ============================================== -->
+        <li class="reason-item reveal-item">
+          <span class="reason-num">01</span>
+          <p>How much you trust and believe in me.</p>
+        </li>
+        <li class="reason-item reveal-item">
+          <span class="reason-num">02</span>
+          <p>How you always know exactly what I need before I even say it.</p>
+        </li>
+        <li class="reason-item reveal-item">
+          <span class="reason-num">03</span>
+          <p>The way you always make time for me, no matter what.</p>
+        </li>
+        <li class="reason-item reveal-item">
+          <span class="reason-num">04</span>
+          <p>The way you give me your full attention.</p>
+        </li>
+        <li class="reason-item reveal-item">
+          <span class="reason-num">05</span>
+          <p>That you chose me, and that you keep choosing me, every single day.</p>
+        </li>
+
+        <!--
+          👉 Copy a <li> block to add more reasons:
+          <li class="reason-item reveal-item">
+            <span class="reason-num">06</span>
+            <p>Your reason here...</p>
+          </li>
+        -->
+
+      </ul>
+    </section>
+
+
+
+
+    <!-- DAY / NIGHT TOGGLE -->
+<div class="theme-toggle-wrap">
+  <button class="theme-toggle" id="themeToggle" aria-label="Toggle day/night mode">
+    <span class="toggle-icon" id="toggleIcon">🌙</span>
+    <span class="toggle-label" id="toggleLabel">night</span>
+  </button>
+</div>
+
+
+
+
+
+
+
+
+    <!-- ── GRAND FINALE: LETTER ───────────────────────────────── -->
+    <section class="letter-section reveal-section">
+      <div class="section-header">
+        <!-- 👉 CUSTOMISE: Change heading -->
+        <h2 class="section-title">Something I Wrote for You</h2>
+        <p class="section-sub">press the envelope when you're ready 💌</p>
+      </div>
+
+      <!-- Envelope wrapper — JS will toggle .is-open on this -->
+      <div class="envelope-wrapper" id="envelopeWrapper">
+
+        <!-- The clickable envelope -->
+        <div class="envelope" id="envelope" role="button" tabindex="0" aria-label="Open the love letter">
+          <div class="envelope-back"></div>
+          <div class="envelope-flap" id="envelopeFlap"></div>
+          <div class="envelope-body"></div>
+          <div class="envelope-front-triangle"></div>
+          <div class="envelope-heart">♥</div>
+        </div>
+
+        <!-- The letter that slides out from the envelope -->
+        <div class="letter-card" id="letterCard" aria-live="polite">
+<div class="letter-inner">
+
+  <p class="letter-date">
+    Everyday with you is my favourite day. So, today is my new favourite day. <br />
+  </p>
+
+  <p class="letter-salutation">
+    My Loving Manika,
+  </p>
+
+  <p style="font-family: 'Sacramento', cursive; font-size: clamp(2.5rem, 10vw, 5rem); text-align: center; color: #b5294e; line-height: 1.3; margin: 1.5rem 0;">
+    I Love You
+  </p>
+
+  <p style="font-family: 'Sacramento', cursive; font-size: clamp(1.6rem, 6vw, 3rem); text-align: center; color: #e8849a; line-height: 1.4;">
+    more than words could ever say
+  </p>
+
+  <p style="font-family: 'Sacramento', cursive; font-size: clamp(1.3rem, 5vw, 2.5rem); text-align: center; color: #b5294e; margin-top: 1rem;">
+    ♥ &nbsp; ♥ &nbsp; ♥
+  </p>
+
+  <p class="letter-sign-off" style="text-align: center;">
+    Forever yours,<br />
+    <span class="letter-signature">
+      Your person 💕
+    </span>
+  </p>
+
+</div>
+        </div>
+        <!-- End .letter-card -->
+
+      </div>
+      <!-- End .envelope-wrapper -->
+
+      <!-- Open letter button (only shown before envelope is opened) -->
+      <button class="open-letter-btn" id="openLetterBtn" aria-controls="letterCard">
+        Open Your Letter 💌
+      </button>
+
+    </section>
+
+    
+
+    <!-- RELATIONSHIP CALENDAR -->
+<section class="calendar-section reveal-section">
+  <div class="section-header">
+    <!-- 👉 CUSTOMISE: Change heading & subtitle -->
+    <h2 class="section-title">Our Days Together</h2>
+    <p class="section-sub">every day filled is a day i got to love you 🗓️</p>
+  </div>
+
+  <!-- Live counter at the top -->
+  <div class="together-counter reveal-item">
+    <div class="counter-box">
+      <span class="counter-num" id="dayCount">0</span>
+      <span class="counter-label">days together</span>
+    </div>
+    <div class="counter-box">
+      <span class="counter-num" id="hourCount">0</span>
+      <span class="counter-label">hours together</span>
+    </div>
+    <div class="counter-box">
+      <span class="counter-num" id="minuteCount">0</span>
+      <span class="counter-label">minutes together</span>
+    </div>
+  </div>
+
+  <!-- Month navigation -->
+  <div class="cal-nav reveal-item">
+    <button class="cal-nav-btn" id="calPrev" aria-label="Previous month">‹</button>
+    <span class="cal-month-label" id="calMonthLabel"></span>
+    <button class="cal-nav-btn" id="calNext" aria-label="Next month">›</button>
+  </div>
+
+  <!-- Calendar grid -->
+  <div class="cal-wrap reveal-item">
+    <div class="cal-weekdays">
+      <span>Sun</span><span>Mon</span><span>Tue</span>
+      <span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+    </div>
+    <div class="cal-grid" id="calGrid"></div>
+  </div>
+
+  <!-- Legend -->
+  <div class="cal-legend reveal-item">
+    <span class="legend-item"><span class="legend-dot filled"></span> days together</span>
+    <span class="legend-item"><span class="legend-dot start"></span> our first day</span>
+    <span class="legend-item"><span class="legend-dot today"></span> today</span>
+  </div>
+
+</section>
+
+
+
+    <!-- ── FOOTER ─────────────────────────────────────────────── -->
+    <footer class="site-footer">
+      <!-- =============================================
+        👉 CUSTOMISE: Change the footer message
+      ============================================== -->
+      <p>Made with every bit of love I have &nbsp;♥&nbsp; just for you</p>
+    </footer>
+
+  </main>
+  <!-- End #mainContent -->
+
+  <script src="script.js"></script>
+</body>
+</html>
