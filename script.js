@@ -346,114 +346,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // PASSWORD GATE
-// PASSWORD GATE
-const PASSWORD     = '22.04.2026';
-const MAX_ATTEMPTS = 3;
-const LOCKOUT_MS   = 15 * 60 * 1000; // 15 minutes
+const PASSWORD = '22.04.2026';
 
 const passwordScreen = document.getElementById('passwordScreen');
 const passwordInput  = document.getElementById('passwordInput');
 const passwordBtn    = document.getElementById('passwordBtn');
 const passwordError  = document.getElementById('passwordError');
 
-let attempts = 0;
-let lockoutTimer = null;
-
-/* ── Check if already locked out from a previous visit ── */
-function checkExistingLockout() {
-  const lockedUntil = localStorage.getItem('lockoutUntil');
-  if (lockedUntil && Date.now() < parseInt(lockedUntil)) {
-    applyLockout(parseInt(lockedUntil) - Date.now());
-    return true;
-  }
-  return false;
-}
-
-/* ── Lock the screen for 15 minutes ── */
-function applyLockout(remainingMs) {
-  // Disable input and button
-  passwordInput.disabled = true;
-  passwordBtn.disabled   = true;
-  passwordInput.value    = '';
-  passwordInput.placeholder = '🔒 locked';
-
-  // Save lockout end time so it survives page refresh
-  const lockedUntil = Date.now() + remainingMs;
-  localStorage.setItem('lockoutUntil', lockedUntil);
-
-  // Show the lockout message with live countdown
-  startCountdown(remainingMs);
-}
-
-/* ── Live countdown timer shown on screen ── */
-function startCountdown(remainingMs) {
-  const errorEl = document.getElementById('passwordError');
-
-  function tick() {
-    const left = parseInt(localStorage.getItem('lockoutUntil')) - Date.now();
-
-    if (left <= 0) {
-      // Lockout expired — unlock
-      localStorage.removeItem('lockoutUntil');
-      attempts = 0;
-      passwordInput.disabled    = false;
-      passwordBtn.disabled      = false;
-      passwordInput.placeholder = 'DD.MM.YYYY';
-      errorEl.classList.remove('visible');
-      errorEl.textContent = 'not quite, my love — try again 💔';
-      clearInterval(lockoutTimer);
-      return;
-    }
-
-    const mins = Math.floor(left / 60000);
-    const secs = Math.floor((left % 60000) / 1000);
-
-    // 👉 CUSTOMISE: Change "Pala HTTP" to whatever you want shown
-    errorEl.textContent = `Pala HTTP 🔒 try again in ${mins}:${secs.toString().padStart(2, '0')}`;
-    errorEl.classList.add('visible');
-  }
-
-  tick(); // show immediately
-  lockoutTimer = setInterval(tick, 1000);
-}
-
-/* ── Main password check ── */
 function checkPassword() {
-  // Block if locked out
-  if (passwordInput.disabled) return;
-
   if (passwordInput.value.trim() === PASSWORD) {
-    // Correct — clear everything and reveal
-    localStorage.removeItem('lockoutUntil');
-    clearInterval(lockoutTimer);
     passwordScreen.classList.add('hidden');
+// Check anniversary every time she successfully logs in
+checkAnniversary();
+    // auto-format as they type: add dots after DD and MM
   } else {
-    attempts++;
-    const left = MAX_ATTEMPTS - attempts;
-
+    passwordError.classList.add('visible');
     passwordInput.classList.add('shake');
-    setTimeout(() => passwordInput.classList.remove('shake'), 400);
-
-    if (attempts >= MAX_ATTEMPTS) {
-      // Lock out for 15 minutes
-      passwordError.textContent = `Pala HTTP 🔒 try again in 15:00`;
-      passwordError.classList.add('visible');
-      applyLockout(LOCKOUT_MS);
-    } else {
-      // Show how many attempts remain
-      passwordError.textContent = `not quite, my love — ${left} attempt${left === 1 ? '' : 's'} left 💔`;
-      passwordError.classList.add('visible');
-      setTimeout(() => {
-        passwordError.classList.remove('visible');
-        // Restore default message
-        setTimeout(() => {
-          passwordError.textContent = 'not quite, my love — try again 💔';
-        }, 400);
-      }, 1800);
-    }
+    setTimeout(() => {
+      passwordError.classList.remove('visible');
+      passwordInput.classList.remove('shake');
+    }, 1800);
   }
-
-  passwordInput.value = '';
 }
 
 passwordBtn.addEventListener('click', checkPassword);
@@ -461,34 +374,12 @@ passwordInput.addEventListener('keydown', (e) => {
   if (e.key === 'Enter') checkPassword();
 });
 
-// Check lockout immediately on page load
-checkExistingLockout();
-
 // Auto-insert dots: typing 22042026 becomes 22.04.2026
-passwordInput.addEventListener('input', (e) => {
-  // Don't auto-format if user is deleting or editing in the middle
-  const cursorPos = passwordInput.selectionStart;
-  const oldVal    = passwordInput.value;
-
-  let val = oldVal.replace(/\./g, '').replace(/\D/g, '');
+passwordInput.addEventListener('input', () => {
+  let val = passwordInput.value.replace(/\./g, '').replace(/\D/g, '');
   if (val.length > 2) val = val.slice(0,2) + '.' + val.slice(2);
   if (val.length > 5) val = val.slice(0,5) + '.' + val.slice(5);
-  val = val.slice(0, 10);
-
-  if (val === oldVal) return; // nothing changed, don't touch cursor
-
-  // Figure out where cursor should land after reformat
-  const digitsBeforeCursor = oldVal.slice(0, cursorPos).replace(/\D/g, '').length;
-  passwordInput.value = val;
-
-  // Restore cursor position accounting for the dots
-  let newCursor = 0;
-  let digitsSeen = 0;
-  for (let i = 0; i < val.length; i++) {
-    if (/\d/.test(val[i])) digitsSeen++;
-    if (digitsSeen === digitsBeforeCursor) { newCursor = i + 1; break; }
-  }
-  passwordInput.setSelectionRange(newCursor, newCursor);
+  passwordInput.value = val.slice(0, 10);
 });
 
 
@@ -1094,7 +985,6 @@ if (document.readyState === 'loading') {
 
 
 
-
 /* ════════════════════════════════════════════════════
    MONTHLY ANNIVERSARY SURPRISE
    Every 22nd of the month she gets a special
@@ -1414,21 +1304,11 @@ function showAnniversaryOverlay() {
 
 /* ── Check if today is the 22nd and she hasn't seen it today ── */
 function checkAnniversary() {
-  const today     = new Date();
-  const todayKey  = `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`;
-  const seenKey   = 'anniversarySeenOn';
+  const today = new Date();
 
-  // Only fire on the 22nd and only once per day
-  if (
-    today.getDate() === ANNIVERSARY_CONFIG.ANNIVERSARY_DAY &&
-    localStorage.getItem(seenKey) !== todayKey
-  ) {
-    localStorage.setItem(seenKey, todayKey);
-
+  // Fire every single time she logs in on the 22nd — no once-per-day limit
+  if (today.getDate() === ANNIVERSARY_CONFIG.ANNIVERSARY_DAY) {
     // Small delay so the password screen clears first
     setTimeout(showAnniversaryOverlay, 1500);
   }
 }
-
-// ── INIT ──
-checkAnniversary();
