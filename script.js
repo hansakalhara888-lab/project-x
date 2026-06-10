@@ -358,6 +358,7 @@ function checkPassword() {
     passwordScreen.classList.add('hidden');
 // Check anniversary every time she successfully logs in
 checkAnniversary();
+checkBirthday();
     // auto-format as they type: add dots after DD and MM
   } else {
     passwordError.classList.add('visible');
@@ -1310,5 +1311,433 @@ function checkAnniversary() {
   if (today.getDate() === ANNIVERSARY_CONFIG.ANNIVERSARY_DAY) {
     // Small delay so the password screen clears first
     setTimeout(showAnniversaryOverlay, 1500);
+  }
+}
+
+
+
+
+
+
+
+/* ════════════════════════════════════════════════════
+   BIRTHDAY SURPRISE — 12th December
+   Every year on her birthday, after login,
+   a special full-screen celebration appears.
+   Completely different feel from the anniversary.
+════════════════════════════════════════════════════ */
+
+/**
+ * 👉 CUSTOMISE:
+ * BIRTH_DAY   — day of her birthday
+ * BIRTH_MONTH — month (1=Jan, 12=Dec)
+ * HER_NAME    — her name shown on the screen
+ * WISHES      — the lines shown on the birthday card
+ */
+const BIRTHDAY_CONFIG = {
+  BIRTH_DAY:   12,
+  BIRTH_MONTH: 12,
+  HER_NAME:    'Manika',        // 👉 change to her name
+  WISHES: [
+    'Today the world got its greatest gift',
+    'the day you were born 🎂',
+    'Happy Birthday, my love 🎉',
+  ],
+};
+
+/* ── Inject birthday CSS ── */
+function injectBirthdayStyles() {
+  if (document.getElementById('birthdayStyles')) return;
+  const style = document.createElement('style');
+  style.id = 'birthdayStyles';
+  style.textContent = `
+
+    /* ── OVERLAY ── */
+    #birthdayOverlay {
+      position: fixed;
+      inset: 0;
+      z-index: 9997;
+      background: #08040f;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 1.4s ease;
+      overflow: hidden;
+    }
+    #birthdayOverlay.visible  { opacity: 1; }
+    #birthdayOverlay.fade-out { opacity: 0; pointer-events: none; }
+
+    /* ── BALLOONS ── */
+    .balloon {
+      position: absolute;
+      bottom: -160px;
+      font-size: 3rem;
+      animation: balloonRise linear forwards;
+      pointer-events: none;
+      filter: drop-shadow(0 4px 12px rgba(244,167,185,0.4));
+    }
+    @keyframes balloonRise {
+      0%   { transform: translateY(0)      rotate(0deg);   opacity: 1; }
+      100% { transform: translateY(-110vh) rotate(var(--sway, 15deg)); opacity: 0; }
+    }
+
+    /* ── STARS BURST ── */
+    .bday-star {
+      position: absolute;
+      pointer-events: none;
+      animation: starBurst ease-out forwards;
+      font-size: var(--sz, 1.2rem);
+    }
+    @keyframes starBurst {
+      0%   { transform: translate(0,0) scale(0); opacity: 1; }
+      60%  { opacity: 1; }
+      100% { transform: translate(var(--tx),var(--ty)) scale(1); opacity: 0; }
+    }
+
+    /* ── CANDLES ROW ── */
+    .candle-row {
+      display: flex;
+      gap: 0.6rem;
+      justify-content: center;
+      margin: 0.5rem 0;
+    }
+    .candle {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0px;
+      animation: candleAppear 0.5s cubic-bezier(0.34,1.56,0.64,1) both;
+    }
+    .candle:nth-child(1){ animation-delay:1.0s }
+    .candle:nth-child(2){ animation-delay:1.15s }
+    .candle:nth-child(3){ animation-delay:1.3s }
+    .candle:nth-child(4){ animation-delay:1.45s }
+    .candle:nth-child(5){ animation-delay:1.6s }
+    @keyframes candleAppear {
+      from { transform: scaleY(0); opacity: 0; }
+      to   { transform: scaleY(1); opacity: 1; }
+    }
+    .candle-flame {
+      font-size: 1.1rem;
+      animation: flameDance 0.9s ease-in-out infinite alternate;
+      transform-origin: bottom center;
+    }
+    .candle:nth-child(even) .candle-flame { animation-direction: alternate-reverse; }
+    @keyframes flameDance {
+      from { transform: scaleX(1)    rotate(-4deg); }
+      to   { transform: scaleX(0.85) rotate( 4deg); }
+    }
+    .candle-body {
+      width: 10px;
+      height: 28px;
+      border-radius: 3px;
+      background: linear-gradient(180deg, #f4a7b9 0%, #b5294e 100%);
+      box-shadow: 0 0 8px rgba(244,167,185,0.5);
+    }
+
+    /* ── CAKE ── */
+    .bday-cake {
+      font-size: clamp(3.5rem, 12vw, 6rem);
+      animation: cakePop 0.8s 0.5s cubic-bezier(0.34,1.56,0.64,1) both;
+      filter: drop-shadow(0 0 24px rgba(244,167,185,0.5));
+    }
+    @keyframes cakePop {
+      from { transform: scale(0) rotate(-10deg); opacity: 0; }
+      to   { transform: scale(1) rotate(0deg);   opacity: 1; }
+    }
+
+    /* ── GLITTER RING around cake ── */
+    .glitter-ring {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: clamp(140px, 35vw, 200px);
+      height: clamp(140px, 35vw, 200px);
+    }
+    .glitter-ring::before,
+    .glitter-ring::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      border: 2px solid rgba(244,167,185,0.25);
+      animation: ringPulse 2s ease-in-out infinite;
+    }
+    .glitter-ring::after {
+      inset: -14px;
+      border-color: rgba(244,167,185,0.12);
+      animation-delay: 0.5s;
+    }
+    @keyframes ringPulse {
+      0%,100% { transform: scale(1);    opacity: 0.6; }
+      50%      { transform: scale(1.08); opacity: 0.2; }
+    }
+
+    /* ── TEXT ── */
+    .bday-content {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.9rem;
+      text-align: center;
+      padding: 2rem;
+    }
+    .bday-eyebrow {
+      font-family: 'Sacramento', cursive;
+      font-size: clamp(1.1rem, 3.5vw, 1.6rem);
+      color: rgba(244,167,185,0.75);
+      animation: bdayFadeUp 1s 0.3s ease both;
+    }
+    .bday-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2.8rem, 10vw, 6.5rem);
+      font-weight: 300;
+      font-style: italic;
+      color: #f9e4ea;
+      line-height: 1;
+      animation: bdayFadeUp 1s 0.5s ease both;
+      text-shadow: 0 0 40px rgba(244,167,185,0.4);
+    }
+    .bday-wish {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(1rem, 3vw, 1.45rem);
+      font-style: italic;
+      font-weight: 300;
+      color: rgba(249,228,234,0.75);
+      max-width: 480px;
+      line-height: 1.65;
+      animation: bdayFadeUp 1s 0.8s ease both;
+    }
+    .bday-wish .bday-highlight {
+      color: #f4a7b9;
+      font-style: normal;
+    }
+    @keyframes bdayFadeUp {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0);    }
+    }
+
+    /* ── CLOSE BUTTON ── */
+    .bday-close {
+      margin-top: 0.8rem;
+      padding: 0.85rem 2.2rem;
+      border-radius: 60px;
+      border: 1.5px solid rgba(244,167,185,0.35);
+      background: transparent;
+      color: rgba(249,228,234,0.8);
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(0.9rem, 2.5vw, 1.05rem);
+      font-style: italic;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      transition: border-color 0.3s, color 0.3s, transform 0.3s;
+      animation: bdayFadeUp 1s 2.5s ease both;
+    }
+    .bday-close:hover {
+      border-color: #f4a7b9;
+      color: #f9e4ea;
+      transform: scale(1.05);
+    }
+
+    /* ── SHOOTING STARS background ── */
+    .bday-shoot {
+      position: absolute;
+      width: 2px;
+      height: 2px;
+      background: #fff;
+      border-radius: 50%;
+      pointer-events: none;
+      animation: shootMove linear forwards;
+      opacity: 0;
+    }
+    .bday-shoot::after {
+      content: '';
+      position: absolute;
+      top: 0; right: 0;
+      width: clamp(60px,15vw,120px);
+      height: 1px;
+      background: linear-gradient(to left, rgba(255,255,255,0.6), transparent);
+      transform-origin: right center;
+    }
+    @keyframes shootMove {
+      0%   { opacity: 0; transform: translate(0,0); }
+      5%   { opacity: 1; }
+      100% { opacity: 0; transform: translate(var(--sdx), var(--sdy)); }
+    }
+  `;
+  document.head.appendChild(style);
+}
+
+/* ── Build the overlay HTML ── */
+function createBirthdayOverlay() {
+  const el = document.createElement('div');
+  el.id = 'birthdayOverlay';
+
+  // Build candles
+  const candles = Array.from({length: 5}, () =>
+    `<div class="candle">
+       <div class="candle-flame">🔥</div>
+       <div class="candle-body"></div>
+     </div>`
+  ).join('');
+
+  // Build wish lines
+  const wishLines = BIRTHDAY_CONFIG.WISHES.map((w, i) =>
+    i === 0
+      ? `<span>${w}</span>`
+      : `<span class="bday-highlight">${w}</span>`
+  ).join('<br/>');
+
+  el.innerHTML = `
+    <div class="bday-content">
+      <p class="bday-eyebrow">today is a very special day 🎀</p>
+
+      <div class="glitter-ring">
+        <div class="bday-cake">🎂</div>
+      </div>
+
+      <div class="candle-row">${candles}</div>
+
+      <p class="bday-name">${BIRTHDAY_CONFIG.HER_NAME}</p>
+
+      <p class="bday-wish">${wishLines}</p>
+
+      <button class="bday-close" id="bdayClose">
+        open your surprise ♥
+      </button>
+    </div>
+  `;
+  document.body.appendChild(el);
+}
+
+/* ── Float balloons up from the bottom ── */
+function launchBalloons() {
+  const EMOJIS = ['🎈','🎈','🎀','🎁','🎊','🎉'];
+  let count = 0;
+
+  const interval = setInterval(() => {
+    const balloon     = document.createElement('div');
+    balloon.classList.add('balloon');
+    balloon.textContent = EMOJIS[Math.floor(Math.random() * EMOJIS.length)];
+
+    const duration = 4500 + Math.random() * 4000;
+    const sway     = (Math.random() - 0.5) * 40;
+
+    balloon.style.cssText = `
+      left: ${5 + Math.random() * 90}vw;
+      animation-duration: ${duration}ms;
+      animation-delay: ${Math.random() * 2000}ms;
+      --sway: ${sway}deg;
+      font-size: ${2 + Math.random() * 2}rem;
+    `;
+
+    document.getElementById('birthdayOverlay')?.appendChild(balloon);
+    setTimeout(() => balloon.remove(), duration + 2500);
+
+    count++;
+    if (count >= 28) clearInterval(interval);
+  }, 180);
+}
+
+/* ── Shooting stars across the dark background ── */
+function launchShootingStars() {
+  let count = 0;
+  const interval = setInterval(() => {
+    const star = document.createElement('div');
+    star.classList.add('bday-shoot');
+
+    const startX  = Math.random() * 100;
+    const startY  = Math.random() * 40;
+    const angle   = 20 + Math.random() * 25;
+    const dist    = 200 + Math.random() * 300;
+    const rad     = (angle * Math.PI) / 180;
+    const dur     = 900 + Math.random() * 800;
+
+    star.style.cssText = `
+      left: ${startX}vw;
+      top:  ${startY}vh;
+      --sdx: ${Math.cos(rad) * dist}px;
+      --sdy: ${Math.sin(rad) * dist}px;
+      animation-duration: ${dur}ms;
+      animation-delay: ${Math.random() * 3000}ms;
+    `;
+
+    document.getElementById('birthdayOverlay')?.appendChild(star);
+    setTimeout(() => star.remove(), dur + 3200);
+
+    count++;
+    if (count >= 18) clearInterval(interval);
+  }, 350);
+}
+
+/* ── Star burst from centre on open ── */
+function burstStars() {
+  const cx = window.innerWidth  / 2;
+  const cy = window.innerHeight / 2;
+  const CHARS = ['✦','★','✨','💫','⭐'];
+  const COLORS = ['#f4a7b9','#e8849a','#ffd6e0','#fff','#c9964a'];
+
+  for (let i = 0; i < 24; i++) {
+    const s     = document.createElement('div');
+    s.classList.add('bday-star');
+    const angle = (i / 24) * Math.PI * 2;
+    const dist  = 80 + Math.random() * 180;
+    const dur   = 900 + Math.random() * 600;
+    const size  = 0.9 + Math.random() * 1.4;
+
+    s.textContent = CHARS[Math.floor(Math.random() * CHARS.length)];
+    s.style.cssText = `
+      left: ${cx}px;
+      top:  ${cy}px;
+      color: ${COLORS[Math.floor(Math.random() * COLORS.length)]};
+      --tx: ${Math.cos(angle) * dist}px;
+      --ty: ${Math.sin(angle) * dist}px;
+      --sz: ${size}rem;
+      animation-duration: ${dur}ms;
+      animation-delay: ${Math.random() * 400}ms;
+    `;
+    document.getElementById('birthdayOverlay')?.appendChild(s);
+    setTimeout(() => s.remove(), dur + 500);
+  }
+}
+
+/* ── Main: show the birthday overlay ── */
+function showBirthdayOverlay() {
+  injectBirthdayStyles();
+  createBirthdayOverlay();
+
+  // Fade in
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      document.getElementById('birthdayOverlay').classList.add('visible');
+    });
+  });
+
+  // Fire all effects with staggered timing
+  setTimeout(launchBalloons,     400);
+  setTimeout(launchShootingStars,600);
+  setTimeout(burstStars,         800);
+  setTimeout(launchConfetti,    1200);
+
+  // Close button
+  document.getElementById('bdayClose').addEventListener('click', () => {
+    const overlay = document.getElementById('birthdayOverlay');
+    overlay.classList.add('fade-out');
+    setTimeout(() => overlay.remove(), 1400);
+  });
+}
+
+/* ── Check if today is her birthday ── */
+function checkBirthday() {
+  const today = new Date();
+  if (
+    today.getDate()    === BIRTHDAY_CONFIG.BIRTH_DAY &&
+    today.getMonth()+1 === BIRTHDAY_CONFIG.BIRTH_MONTH
+  ) {
+    setTimeout(showBirthdayOverlay, 1500);
   }
 }
