@@ -1088,3 +1088,347 @@ if (document.readyState === 'loading') {
 } else {
   initCalendar();
 }
+
+
+
+
+
+
+
+/* ════════════════════════════════════════════════════
+   MONTHLY ANNIVERSARY SURPRISE
+   Every 22nd of the month she gets a special
+   full-screen celebration when she opens the site.
+   ════════════════════════════════════════════════════ */
+
+/**
+ * 👉 CUSTOMISE:
+ * ANNIVERSARY_DAY  — the day of the month (22)
+ * MESSAGES         — what shows on each month's anniversary
+ *                    index 0 = 1st month, 1 = 2nd month, etc.
+ *                    after the list runs out it cycles back
+ */
+const ANNIVERSARY_CONFIG = {
+  ANNIVERSARY_DAY: 22,
+  MESSAGES: [
+    { month: "1 month",  line1: "One month of us",        line2: "and I'd choose you again in a heartbeat 💕" },
+    { month: "2 months", line1: "Two months together",    line2: "every day better than the last 🌹" },
+    { month: "3 months", line1: "Three whole months",     line2: "and I'm still falling for you 🍂" },
+    { month: "4 months", line1: "Four months of magic",   line2: "you make everything feel like home 🕯️" },
+    { month: "5 months", line1: "Five months, my love",   line2: "I can't imagine a day without you ✨" },
+    { month: "6 months", line1: "Half a year of us",      line2: "and the best is still to come 🌸" },
+    { month: "7 months", line1: "Seven months together",  line2: "you're my favourite everything 💌" },
+    { month: "8 months", line1: "Eight beautiful months", line2: "thank you for being mine 🌙" },
+    { month: "9 months", line1: "Nine months of love",    line2: "still my favourite surprise 🎁" },
+    { month: "10 months",line1: "Ten months, my darling", line2: "every moment with you is a gift 💍" },
+    { month: "11 months",line1: "Eleven months of us",    line2: "almost a year of the best thing ever 🥂" },
+    { month: "1 year! 🎉",line1: "One whole year together","line2": "you are my greatest adventure 🌍💕" },
+  ],
+};
+
+/* ── Build and inject the overlay HTML ── */
+function createAnniversaryOverlay() {
+  const el = document.createElement('div');
+  el.id = 'anniversaryOverlay';
+  el.innerHTML = `
+    <canvas id="anniversaryCanvas"></canvas>
+    <div class="anni-content">
+      <div class="anni-ornament">✦ &nbsp; ✦ &nbsp; ✦</div>
+      <p class="anni-eyebrow" id="anniEyebrow"></p>
+      <h2 class="anni-title" id="anniTitle"></h2>
+      <p class="anni-sub" id="anniSub"></p>
+      <div class="anni-hearts" id="anniHearts"></div>
+      <button class="anni-close" id="anniClose">
+        continue to your surprise ♥
+      </button>
+    </div>
+  `;
+  document.body.appendChild(el);
+}
+
+/* ── Inject the CSS ── */
+function injectAnniversaryStyles() {
+  const style = document.createElement('style');
+  style.textContent = `
+    #anniversaryOverlay {
+      position: fixed;
+      inset: 0;
+      z-index: 9998;
+      background: #0d0408;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 1.2s ease;
+      overflow: hidden;
+    }
+
+    #anniversaryOverlay.visible {
+      opacity: 1;
+    }
+
+    #anniversaryOverlay.fade-out {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    #anniversaryCanvas {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .anni-content {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.2rem;
+      padding: 2rem;
+      animation: anniFloat 4s ease-in-out infinite alternate;
+    }
+
+    @keyframes anniFloat {
+      from { transform: translateY(0px);  }
+      to   { transform: translateY(-12px); }
+    }
+
+    .anni-ornament {
+      color: #f4a7b9;
+      opacity: 0.6;
+      letter-spacing: 0.4em;
+      font-size: 0.8rem;
+      animation: anniFade 2s ease-in-out infinite alternate;
+    }
+
+    @keyframes anniFade {
+      from { opacity: 0.3; }
+      to   { opacity: 0.8; }
+    }
+
+    .anni-eyebrow {
+      font-family: 'Sacramento', cursive;
+      font-size: clamp(1.2rem, 4vw, 1.8rem);
+      color: rgba(244,167,185,0.8);
+      letter-spacing: 0.03em;
+    }
+
+    .anni-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2.2rem, 8vw, 5rem);
+      font-weight: 300;
+      font-style: italic;
+      color: #f9e4ea;
+      line-height: 1.15;
+      max-width: 700px;
+    }
+
+    .anni-title .anni-accent {
+      color: #f4a7b9;
+      display: block;
+    }
+
+    .anni-sub {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(1rem, 3vw, 1.4rem);
+      font-style: italic;
+      font-weight: 300;
+      color: rgba(249,228,234,0.7);
+      max-width: 500px;
+      line-height: 1.6;
+    }
+
+    .anni-hearts {
+      display: flex;
+      gap: 0.8rem;
+      font-size: clamp(1.4rem, 5vw, 2.2rem);
+      margin: 0.5rem 0;
+      animation: anniHeartPop 0.6s cubic-bezier(0.34,1.56,0.64,1) both;
+      animation-delay: 1s;
+    }
+
+    @keyframes anniHeartPop {
+      from { transform: scale(0); opacity: 0; }
+      to   { transform: scale(1); opacity: 1; }
+    }
+
+    .anni-hearts span {
+      display: inline-block;
+      animation: anniHeartBounce 1.8s ease-in-out infinite;
+    }
+
+    .anni-hearts span:nth-child(2) { animation-delay: 0.2s; }
+    .anni-hearts span:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes anniHeartBounce {
+      0%,100% { transform: translateY(0) scale(1);    }
+      50%      { transform: translateY(-8px) scale(1.2); }
+    }
+
+    .anni-close {
+      margin-top: 1rem;
+      padding: 0.85rem 2.2rem;
+      border-radius: 60px;
+      border: 1.5px solid rgba(244,167,185,0.4);
+      background: transparent;
+      color: rgba(249,228,234,0.8);
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+      font-style: italic;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      transition: border-color 0.3s, color 0.3s, transform 0.3s;
+      animation: anniFadeIn 1s 2s ease both;
+    }
+
+    @keyframes anniFadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0);    }
+    }
+
+    .anni-close:hover {
+      border-color: #f4a7b9;
+      color: #f9e4ea;
+      transform: scale(1.05);
+    }
+  `;
+  document.head.appendChild(style);
+}
+
+/* ── Shooting star particles on the anniversary canvas ── */
+function startAnniversaryParticles(canvas) {
+  const ctx  = canvas.getContext('2d');
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  window.addEventListener('resize', () => {
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
+  });
+
+  const pieces = [];
+  const EMOJIS = ['♥', '💕', '✦', '🌹', '✨'];
+  const COLORS = ['#f4a7b9','#e8849a','#b5294e','#ffd6e0','#fff0f3'];
+
+  for (let i = 0; i < 55; i++) {
+    pieces.push({
+      x:     Math.random() * canvas.width,
+      y:     Math.random() * canvas.height,
+      char:  EMOJIS[Math.floor(Math.random() * EMOJIS.length)],
+      color: COLORS[Math.floor(Math.random() * COLORS.length)],
+      size:  10 + Math.random() * 18,
+      speedY: 0.3 + Math.random() * 0.8,
+      speedX: (Math.random() - 0.5) * 0.5,
+      alpha:  0.2 + Math.random() * 0.6,
+      pulse:  Math.random() * Math.PI * 2,
+      wobble: Math.random() * Math.PI * 2,
+      wobbleSpeed: 0.01 + Math.random() * 0.02,
+    });
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    pieces.forEach(p => {
+      p.y      -= p.speedY;
+      p.x      += p.speedX;
+      p.pulse  += 0.02;
+      p.wobble += p.wobbleSpeed;
+      p.x      += Math.sin(p.wobble) * 0.4;
+
+      const a = Math.max(0, Math.min(1, p.alpha + Math.sin(p.pulse) * 0.15));
+      ctx.save();
+      ctx.globalAlpha = a;
+      ctx.fillStyle   = p.color;
+      ctx.font        = `${p.size}px serif`;
+      ctx.textAlign   = 'center';
+      ctx.fillText(p.char, p.x, p.y);
+      ctx.restore();
+
+      if (p.y < -30) {
+        p.y = canvas.height + 20;
+        p.x = Math.random() * canvas.width;
+      }
+    });
+    requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+/* ── Work out which month anniversary it is ── */
+function getAnniversaryMessage() {
+  const start   = new Date(2026, 3, 22); // April 22 2026 — change if needed
+  const today   = new Date();
+  const months  =
+    (today.getFullYear() - start.getFullYear()) * 12 +
+    (today.getMonth()   - start.getMonth());
+
+  if (months < 0) return null;
+
+  const idx = Math.min(months, ANNIVERSARY_CONFIG.MESSAGES.length - 1);
+  return ANNIVERSARY_CONFIG.MESSAGES[idx];
+}
+
+/* ── Show the overlay ── */
+function showAnniversaryOverlay() {
+  const msg = getAnniversaryMessage();
+  if (!msg) return;
+
+  injectAnniversaryStyles();
+  createAnniversaryOverlay();
+
+  // Fill in the text
+  document.getElementById('anniEyebrow').textContent = `happy ${msg.month} anniversary, my love`;
+  document.getElementById('anniTitle').innerHTML =
+    `${msg.line1}<span class="anni-accent">${msg.line2}</span>`;
+
+  // Bouncing hearts row
+  const heartsEl = document.getElementById('anniHearts');
+  ['♥', '💕', '♥'].forEach(h => {
+    const s = document.createElement('span');
+    s.textContent = h;
+    heartsEl.appendChild(s);
+  });
+
+  // Start particles
+  startAnniversaryParticles(document.getElementById('anniversaryCanvas'));
+
+  // Fade in
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      document.getElementById('anniversaryOverlay').classList.add('visible');
+    });
+  });
+
+  // Also launch confetti after 1 second
+  setTimeout(launchConfetti, 1000);
+
+  // Close button
+  document.getElementById('anniClose').addEventListener('click', () => {
+    const overlay = document.getElementById('anniversaryOverlay');
+    overlay.classList.add('fade-out');
+    setTimeout(() => overlay.remove(), 1200);
+  });
+}
+
+/* ── Check if today is the 22nd and she hasn't seen it today ── */
+function checkAnniversary() {
+  const today     = new Date();
+  const todayKey  = `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`;
+  const seenKey   = 'anniversarySeenOn';
+
+  // Only fire on the 22nd and only once per day
+  if (
+    today.getDate() === ANNIVERSARY_CONFIG.ANNIVERSARY_DAY &&
+    localStorage.getItem(seenKey) !== todayKey
+  ) {
+    localStorage.setItem(seenKey, todayKey);
+
+    // Small delay so the password screen clears first
+    setTimeout(showAnniversaryOverlay, 1500);
+  }
+}
+
+// ── INIT ──
+checkAnniversary();
